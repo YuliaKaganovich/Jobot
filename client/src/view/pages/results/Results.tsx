@@ -1,86 +1,32 @@
-<<<<<<< Updated upstream
-import React from 'react'
-
-const Results = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
-
-export default Results
-=======
 import { useJobs } from "./ResultsVM";
+import JobCard from "../../components/jobCard/JobCard";
+import styles from "./Results.module.scss";
+import { useParams } from "react-router";
 
 const Results = () => {
-  const { jobs, loading, error } = useJobs();
+  const { jobIds, savedJobIds, loading, error, saveJob } = useJobs();
 
-  if (loading) return <p>Loading jobs...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (jobIds.length === 0) return <p>No jobs found.</p>;
 
   return (
-    <div>
-      <h2>Job Results</h2>
-      {jobs.length === 0 ? (
-        <p>No jobs found.</p>
-      ) : (
-        <ul>
-          {jobs.map((job) => (
-            <li
-              key={job._id}
-              style={{ borderBottom: "1px solid #ddd", padding: "10px" }}
+    <div className={styles.resultsContainer}>
+      {jobIds.map((jobId) => (
+        <div key={jobId} className={styles.jobCardContainer}>
+          <JobCard jobId={jobId} />
+          {!savedJobIds.includes(jobId) && (
+            <button
+              className={styles.saveButton}
+              onClick={() => saveJob(jobId)}
             >
-              <h3>{job.jobName}</h3>
-              <p>
-                <strong>Details:</strong> {job.details}
-              </p>
-              <p>
-                <strong>Address:</strong> {job.address}
-              </p>
-              <p>
-                <strong>Location:</strong> {job.location}
-              </p>
-              <p>
-                <strong>Employment Type:</strong> {job.employmentType}
-              </p>
-              <p>
-                <strong>Industry:</strong> {job.Industry}
-              </p>
-              <p>
-                <strong>Salary:</strong> ${job.salary}
-              </p>
-              <p>
-                <strong>Housing Included:</strong>{" "}
-                {job.housingIncluded ? "Yes" : "No"}
-              </p>
-              <p>
-                <strong>Type:</strong> {job.type}
-              </p>
-              <p>
-                <strong>Term:</strong> {job.term}
-              </p>
-              <p>
-                <strong>Benefits:</strong> {job.benefits}
-              </p>
-              {job.websiteURL && (
-                <p>
-                  <a
-                    href={job.websiteURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Company Website
-                  </a>
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+              Save
+            </button>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
 
 export default Results;
->>>>>>> Stashed changes

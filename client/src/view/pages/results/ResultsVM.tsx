@@ -1,40 +1,60 @@
-<<<<<<< Updated upstream
-export function useResultsVM() {
- 
-}
-=======
-import { useEffect, useState } from "react";
-import { Job } from "../../model/JobModel";
+import { useState, useEffect } from "react";
 
-export const useJobs = () => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+
+export const useJobs = (userId?: string) => {
+  const [jobIds, setJobIds] = useState<string[]>([]);
+  const [savedJobIds, setSavedJobIds] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchJobIds = async () => {
+      const fetchUrl = userId
+        ? `http://localhost:3000/api/matched-jobs/${userId}`
+        : "http://localhost:3000/api/get-all-jobs";
       try {
-        const response = await fetch("/api/jobs");
+        const response = await fetch(
+          fetchUrl
+        );
+        if (!response.ok) throw new Error("Failed to fetch job IDs");
 
-        if (!response.ok) {
-          const errorData = await response.json(); 
-          throw new Error(errorData.message || "Failed to fetch jobs");
-        }
-
-        const data: Job[] = await response.json();
-        setJobs(data);
-        setError(null); // If response is successful, clear the error
+        const data = await response.json();
+        console.log(data)
+        setJobIds(data.jobs.map((job: any) => job._id)); // Get job IDs only
       } catch (err) {
-        // If an error occurred, set the error message
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError("Failed to fetch job IDs");
       } finally {
-        setLoading(false); // Hide the loading spinner
+        setLoading(false);
       }
     };
 
-    fetchJobs();
+    fetchJobIds();
   }, []);
 
-  return { jobs, loading, error };
+  const saveJob = async (jobId: string) => {
+    try {
+      if (!token) throw new Error("No authentication token found");
+
+      const response = await fetch("http://localhost:3000/api/saved-jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ jobId }),
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to save job");
+
+      setSavedJobIds((prev) => [...prev, jobId]);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  return { jobIds, savedJobIds, loading, error, saveJob };
 };
->>>>>>> Stashed changes
